@@ -189,7 +189,7 @@ def aside():
             </div>
             <a class="btn btn-block" href="tel:{TEL}">{ICONO_TEL} {TEL_TXT}</a>
             <address>Avenida de la Reina Sofía, 10<br>28919 Leganés, Madrid</address>
-            <a class="text-link" href="https://www.google.com/maps/search/?api=1&amp;query=Avenida+de+la+Reina+Sof%C3%ADa+10%2C+28919+Legan%C3%A9s" target="_blank" rel="noopener">Cómo llegar</a>
+            <a class="text-link" href="https://www.google.com/maps?cid=871696087336392580" target="_blank" rel="noopener">Cómo llegar</a>
             <table class="aside-hours">
               <tbody data-hours>
               {filas_html}
