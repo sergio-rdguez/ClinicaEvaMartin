@@ -3,19 +3,39 @@
 Web de la clínica dental en Leganés, publicada con GitHub Pages en
 https://www.dentalevamartinmolina.com
 
-Es una web estática (HTML, CSS y JavaScript sin dependencias ni proceso de build).
+Es una web estática (HTML, CSS y JavaScript, sin dependencias). Las páginas
+interiores se generan con un pequeño script de Python.
 
 ## Estructura
 
 ```
-index.html        Página principal
-404.html          Página de error (también recoge enlaces de la web antigua de Wix)
-css/styles.css    Estilos (paleta y tipografía en las variables de :root)
-js/main.js        Menú móvil, estado "abierto/cerrado", mapa bajo demanda
-assets/img/       Logo y fotos de la clínica
-CNAME             Dominio propio para GitHub Pages
-robots.txt, sitemap.xml
+index.html              Portada (se edita a mano)
+<tratamiento>/          Una página por tratamiento (generadas)
+tratamientos/           Índice de tratamientos (generado)
+aviso-legal.html, privacidad.html, cookies.html, 404.html   (generadas)
+contacto/, blog-1/      Redirecciones de URLs antiguas de Wix (generadas)
+sitemap.xml, site.webmanifest                               (generados)
+tools/contenido.py      Textos de los tratamientos
+tools/legal.py          Textos legales
+tools/generar.py        Plantillas y generador
+css/styles.css          Estilos (paleta y tipografía en las variables de :root)
+js/main.js              Menú móvil, estado "abierto/cerrado", mapa bajo demanda
+assets/img/             Fotos (JPG + WebP en varios tamaños), logo e iconos
+assets/fonts/           Tipografías alojadas en la propia web
+CNAME                   Dominio propio para GitHub Pages
 ```
+
+## Editar contenidos
+
+- **Tratamientos**: edita `tools/contenido.py` y ejecuta `python tools/generar.py`.
+  Para añadir un tratamiento nuevo, añade un bloque a la lista y enlázalo también
+  desde la portada (`index.html`, sección `#tratamientos`).
+- **Textos legales**: `tools/legal.py` y vuelve a generar.
+- **Cabecera y pie**: en `tools/generar.py` (funciones `header` y `footer`).
+  El pie de `index.html` es una copia: si cambias el pie, cópialo también allí.
+- **Horario**: tabla de `index.html`, función `aside` de `tools/generar.py` y el
+  objeto `schedule` de `js/main.js`. Actualiza también `openingHoursSpecification`
+  en el JSON-LD de `index.html`.
 
 ## Ver en local
 
@@ -25,37 +45,24 @@ python -m http.server 8080
 
 Y abrir http://localhost:8080
 
-## Cambios habituales
+## SEO incluido
 
-- **Horario**: se cambia en dos sitios: la tabla de `index.html` (sección `#contacto`)
-  y el objeto `schedule` de `js/main.js` (minutos desde las 00:00).
-- **Teléfono / email / dirección**: buscar `916806724`, `draevamartin@gmail.com` o
-  `Reina Sofía` en `index.html` (incluye el bloque JSON-LD de la cabecera, que usa Google).
-- **Tratamientos**: cada uno es un `<li class="treat">` dentro de `#tratamientos`.
+- Título, descripción, canonical y Open Graph únicos en cada página.
+- Datos estructurados (JSON-LD): `Dentist` con dirección, horario y servicios en la
+  portada; `MedicalWebPage`, `BreadcrumbList` y `FAQPage` en cada tratamiento.
+- Una página por tratamiento con URL propia, manteniendo las URLs antiguas de Wix
+  (`/implantes`, `/ortodoncia`, `/ortodoncia-invisible`, `/estetica-dental`,
+  `/tratamientos`, `/contacto`).
+- `sitemap.xml` y `robots.txt`.
+- Imágenes WebP con `srcset`, carga diferida y textos alternativos.
+- Sin cookies ni recursos externos al cargar.
 
-## Publicar en GitHub Pages
+## Dominio y DNS
 
-1. En el repositorio: **Settings → Pages → Build and deployment**
-   - Source: *Deploy from a branch*
-   - Branch: `main` / `(root)`
-2. En **Custom domain** escribir `www.dentalevamartinmolina.com` y guardar.
-3. Cuando el certificado esté listo, marcar **Enforce HTTPS**.
-
-## DNS del dominio
-
-En el panel donde esté gestionado el dominio (si se compró con Wix, en
-Wix → Dominios → Registros DNS), quitar los registros que apuntan a Wix y crear:
-
-| Tipo  | Nombre | Valor                    |
-|-------|--------|--------------------------|
-| CNAME | www    | sergio-rdguez.github.io  |
-| A     | @      | 185.199.108.153          |
-| A     | @      | 185.199.109.153          |
-| A     | @      | 185.199.110.153          |
-| A     | @      | 185.199.111.153          |
-| AAAA  | @      | 2606:50c0:8000::153      |
-| AAAA  | @      | 2606:50c0:8001::153      |
-| AAAA  | @      | 2606:50c0:8002::153      |
-| AAAA  | @      | 2606:50c0:8003::153      |
-
-Los cambios de DNS pueden tardar desde minutos hasta 24–48 h en propagarse.
+- **DNS**: Cloudflare (plan gratuito). Registros en modo *Solo DNS* (nube gris):
+  - `A` `@` → 185.199.108.153, 185.199.109.153, 185.199.110.153, 185.199.111.153
+  - `CNAME` `www` → sergio-rdguez.github.io
+- **Registrador**: Wix hasta completar la transferencia a Cloudflare Registrar
+  (posible a partir del 23/12/2026).
+- **GitHub Pages**: Settings → Pages, rama `main` / `(root)`, dominio
+  `www.dentalevamartinmolina.com`, *Enforce HTTPS* activado cuando haya certificado.
