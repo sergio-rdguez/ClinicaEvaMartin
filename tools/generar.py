@@ -22,9 +22,11 @@ SITE = "https://www.dentalevamartinmolina.com"
 HOY = datetime.date.today().isoformat()
 TEL = "+34916806724"
 TEL_TXT = "91 680 67 24"
+WA = "https://wa.me/34640184016?text=Hola%2C%20quer%C3%ADa%20pedir%20cita%20en%20la%20cl%C3%ADnica."
 DOCTORA = {"@type": "Person", "name": "Eva María Martín Molina", "jobTitle": "Odontóloga"}
 POR_SLUG = {t["slug"]: t for t in TRATAMIENTOS}
 
+ICONO_WA = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1 2.7.1.2 1.8 2.8 4.5 3.9 1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>'
 ICONO_TEL = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>'
 
 
@@ -130,7 +132,7 @@ def footer():
             <li><a href="/#doctora">La doctora</a></li>
             <li><a href="/#clinica">La clínica</a></li>
             <li><a href="/#contacto">Horario y contacto</a></li>
-            <li><a href="https://www.facebook.com/Cl%C3%ADnica-Dental-Dra-Eva-Mart%C3%ADn-Molina-311185449074099/" target="_blank" rel="noopener">Facebook</a></li>
+            <li><a href="https://www.facebook.com/p/Cl%C3%ADnica-Dental-Dra-Eva-Mart%C3%ADn-Molina-100068460270961/" target="_blank" rel="noopener">Facebook</a></li>
           </ul>
         </div>
       </nav>
@@ -146,10 +148,10 @@ def footer():
     </div>
   </footer>
 
-  <a class="call-bar" href="tel:{TEL}">
-    {ICONO_TEL}
-    Llamar para pedir cita
-  </a>
+  <div class="call-bar">
+    <a href="tel:{TEL}">{ICONO_TEL} Llamar</a>
+    <a class="call-wa" href="{WA}" target="_blank" rel="noopener">{ICONO_WA} WhatsApp</a>
+  </div>
 
   <script src="/js/main.js" defer></script>
 </body>
@@ -188,6 +190,7 @@ def aside():
               </span>
             </div>
             <a class="btn btn-block" href="tel:{TEL}">{ICONO_TEL} {TEL_TXT}</a>
+            <a class="btn btn-ghost btn-block" href="{WA}" target="_blank" rel="noopener">{ICONO_WA} Escribir por WhatsApp</a>
             <address>Avenida de la Reina Sofía, 10<br>28919 Leganés, Madrid</address>
             <a class="text-link" href="https://www.google.com/maps?cid=871696087336392580" target="_blank" rel="noopener">Cómo llegar</a>
             <table class="aside-hours">
@@ -272,7 +275,7 @@ def pagina_tratamiento(t):
         <p class="lead">{e(t["intro"])}</p>
         <div class="hero-actions">
           <a class="btn" href="tel:{TEL}">{ICONO_TEL} Pedir cita: {TEL_TXT}</a>
-          <a class="btn btn-ghost" href="#visita">Horario y dirección</a>
+          <a class="btn btn-ghost" href="{WA}" target="_blank" rel="noopener">{ICONO_WA} Escribir por WhatsApp</a>
         </div>
       </div>
     </section>
@@ -341,6 +344,7 @@ def pagina_tratamientos():
         <p class="lead">Cada tratamiento empieza con un diagnóstico hecho por la Dra. Eva Martín Molina y un plan explicado con calma, para que sepas en todo momento qué vamos a hacer y por qué.</p>
         <div class="hero-actions">
           <a class="btn" href="tel:{TEL}">{ICONO_TEL} Pedir cita: {TEL_TXT}</a>
+          <a class="btn btn-ghost" href="{WA}" target="_blank" rel="noopener">{ICONO_WA} Escribir por WhatsApp</a>
         </div>
       </div>
     </section>

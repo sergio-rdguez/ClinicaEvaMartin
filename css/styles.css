@@ -960,19 +960,26 @@ p { margin: 0 0 1em; text-wrap: pretty; }
     position: fixed;
     left: 12px; right: 12px; bottom: 12px;
     z-index: 40;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    transition: transform .3s ease, opacity .3s ease;
+  }
+  .call-bar a {
     display: flex;
     align-items: center;
     justify-content: center;
-    gap: 10px;
+    gap: 8px;
     min-height: 54px;
     border-radius: 999px;
+    border: 2px solid var(--navy);
     background: var(--navy);
     color: var(--white);
     font-weight: 600;
     text-decoration: none;
     box-shadow: 0 16px 32px -12px rgba(11, 37, 71, 0.6);
-    transition: transform .3s ease, opacity .3s ease;
   }
+  .call-bar .call-wa { background: var(--white); color: var(--navy); }
   .call-bar.is-hidden {
     transform: translateY(140%);
     opacity: 0;

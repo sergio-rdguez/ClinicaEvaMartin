@@ -50,7 +50,7 @@ PRIVACIDAD = f"""      <h1>Política de privacidad</h1>
 {TITULAR}
 
       <h2>Qué datos tratamos</h2>
-      <p>Esta web no tiene formularios ni zona de usuarios, y no recoge datos para analítica ni publicidad. Solo tratamos los datos que tú nos facilitas cuando nos llamas o nos escribes: normalmente tu nombre, tu teléfono, tu email y el motivo de la consulta.</p>
+      <p>Esta web no tiene formularios ni zona de usuarios, y no recoge datos para analítica ni publicidad. Solo tratamos los datos que tú nos facilitas cuando nos llamas o nos escribes por email o WhatsApp: normalmente tu nombre, tu teléfono, tu email y el motivo de la consulta.</p>
       <p>Si después eres paciente de la clínica, tu historia clínica y tus datos de salud se tratan conforme a la información que te damos en la propia clínica.</p>
 
       <h2>Para qué los usamos</h2>
@@ -72,11 +72,12 @@ PRIVACIDAD = f"""      <h1>Política de privacidad</h1>
         <li><strong>GitHub Pages</strong> (GitHub, Inc.), que aloja la web. Como cualquier servidor, registra datos técnicos de las visitas, como la dirección IP, por motivos de seguridad.</li>
         <li><strong>Gmail</strong> (Google), el proveedor del correo electrónico de la clínica.</li>
         <li><strong>Google Maps</strong>, solo si pulsas el botón «Ver mapa» en la sección de contacto.</li>
+        <li><strong>WhatsApp</strong> (Meta), solo si decides escribirnos por ese canal. En ese caso se aplica también la política de privacidad de WhatsApp.</li>
       </ul>
-      <p>Estos proveedores pueden tratar datos en Estados Unidos. Ambas empresas están adheridas al Marco de Privacidad de Datos UE-EE. UU., que la Comisión Europea reconoce como garantía adecuada.</p>
+      <p>Estos proveedores pueden tratar datos en Estados Unidos. Las tres empresas están adheridas al Marco de Privacidad de Datos UE-EE. UU., que la Comisión Europea reconoce como garantía adecuada.</p>
 
       <h2>Tus derechos</h2>
-      <p>Puedes ejercer en cualquier momento tus derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad, y retirar tu consentimiento. Para ello, escríbenos a <a href="mailto:draevamartin@gmail.com">draevamartin@gmail.com</a> o dirígete a la clínica, indicando qué derecho quieres ejercer.</p>
+      <p>Puedes ejercer en cualquier momento tus derechos de acceso, rectificación, supresión, oposición, limitación del tratamiento y portabilidad, y retirar tu consentimiento. Para ello, escríbenos a <a href="mailto:draevamartin@gmail.com">draevamartin@gmail.com</a>, por WhatsApp o dirígete a la clínica, indicando qué derecho quieres ejercer.</p>
       <p>Si crees que no hemos tratado bien tus datos, puedes presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener">Agencia Española de Protección de Datos</a>.</p>"""
 
 COOKIES = f"""      <h1>Política de cookies</h1>
@@ -90,7 +91,7 @@ COOKIES = f"""      <h1>Política de cookies</h1>
       <p>Si prefieres no cargarlo, puedes usar el enlace «Abrir en Google Maps» o simplemente la dirección: Avenida de la Reina Sofía, 10, Leganés.</p>
 
       <h2>Enlaces a otras webs</h2>
-      <p>El enlace a nuestra página de Facebook es un enlace normal: no carga nada de Facebook hasta que lo pulsas. Una vez en otra web, se aplica su propia política de cookies.</p>
+      <p>Los enlaces a nuestra página de Facebook y a WhatsApp son enlaces normales: no cargan nada de esos servicios hasta que los pulsas. Una vez en otra web, se aplica su propia política de cookies.</p>
 
       <h2>Cómo borrar las cookies</h2>
       <p>Puedes ver y borrar las cookies de cualquier web desde la configuración de tu navegador, en el apartado de privacidad.</p>"""
