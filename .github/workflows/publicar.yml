@@ -1,0 +1,61 @@
+# Genera y publica la web en GitHub Pages.
+#
+# - Cada mañana (06:15 en invierno / 07:15 en verano, hora de Madrid) para que
+#   salgan las entradas del blog programadas para ese día.
+# - Cada vez que se sube un cambio a main.
+# - A mano desde la pestaña Actions ("Run workflow").
+#
+# Requisito: Settings → Pages → Build and deployment → Source: "GitHub Actions".
+name: Publicar web
+
+on:
+  push:
+    branches: [main]
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0   # historial completo: el sitemap usa la fecha del último cambio de cada texto
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Generar páginas (solo entradas con fecha de hoy o anterior)
+        run: python tools/generar.py
+
+      - name: Preparar la carpeta publicada
+        run: |
+          mkdir _site
+          rsync -a ./ _site/ \
+            --exclude '.git' --exclude '.github' --exclude '.claude' \
+            --exclude 'tools' --exclude 'README.md' --exclude '_site' --exclude '.gitignore'
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

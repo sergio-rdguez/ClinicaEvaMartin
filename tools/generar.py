@@ -3,28 +3,64 @@
 Uso (desde la raíz del repositorio):
     python tools/generar.py
 
-Genera: páginas de tratamientos, /tratamientos/, páginas legales, 404,
-redirecciones de URLs antiguas de Wix, sitemap.xml y site.webmanifest.
-La portada (index.html) se edita a mano.
+    python tools/generar.py --hasta 2027-01-31   (previsualizar entradas futuras)
+
+Genera: blog (entradas publicadas, índice, RSS), páginas de tratamientos,
+/tratamientos/, páginas legales, 404, redirecciones de URLs antiguas de Wix,
+sitemap.xml y site.webmanifest.
+La portada (index.html) se edita a mano, salvo el bloque "Del blog".
 """
+import argparse
 import datetime
 import html
 import json
 import pathlib
+import shutil
+import subprocess
 import sys
 
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from contenido import TRATAMIENTOS  # noqa: E402
 from legal import AVISO, COOKIES, PRIVACIDAD  # noqa: E402
+import blog  # noqa: E402
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 SITE = "https://www.dentalevamartinmolina.com"
-HOY = datetime.date.today().isoformat()
+HOY = blog.hoy_madrid().isoformat()
 TEL = "+34916806724"
 TEL_TXT = "91 680 67 24"
 WA = "https://wa.me/34640184016?text=Hola%2C%20quer%C3%ADa%20pedir%20cita%20en%20la%20cl%C3%ADnica."
 DOCTORA = {"@type": "Person", "name": "Eva María Martín Molina", "jobTitle": "Odontóloga"}
 POR_SLUG = {t["slug"]: t for t in TRATAMIENTOS}
+CLINICA_ID = {"@id": SITE + "/#clinica"}
+MESES = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto",
+         "septiembre", "octubre", "noviembre", "diciembre"]
+POR_PAGINA = 12
+# Entradas publicadas (de la más nueva a la más antigua). Se rellena en main().
+PUBLICADAS = []
+
+
+def fecha_larga(fecha):
+    return f"{fecha.day} de {MESES[fecha.month - 1]} de {fecha.year}"
+
+
+def ultima_modificacion():
+    """Fecha del último commit que cambió los textos o las plantillas.
+
+    Así las páginas fijas no cambian de fecha en el sitemap cada vez que la
+    publicación diaria vuelve a generar la web.
+    """
+    try:
+        salida = subprocess.run(
+            ["git", "log", "-1", "--format=%cs", "--", "tools/contenido.py", "tools/legal.py",
+             "tools/generar.py", "index.html"],
+            cwd=ROOT, capture_output=True, text=True, check=True).stdout.strip()
+        return salida or HOY
+    except (OSError, subprocess.CalledProcessError):
+        return HOY
+
+
+ACTUALIZADO = ultima_modificacion()
 
 ICONO_WA = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2Zm0 18.2c-1.5 0-3-.4-4.2-1.2l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 1 1 12 20.2Zm4.5-6.1c-.2-.1-1.5-.7-1.7-.8-.2-.1-.4-.1-.6.1l-.8 1c-.1.2-.3.2-.5.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.3-.4.7-1.4.1-.2 0-.3 0-.4l-.8-1.8c-.2-.5-.4-.4-.6-.4h-.5a1 1 0 0 0-.7.3 3 3 0 0 0-.9 2.2c0 1.3.9 2.5 1 2.7.1.2 1.8 2.8 4.5 3.9 1.7.7 2.3.8 3.2.6.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.2-1.2-.1-.1-.3-.2-.5-.3Z"/></svg>'
 ICONO_TEL = '<svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18"><path fill="currentColor" d="M6.6 10.8a15.1 15.1 0 0 0 6.6 6.6l2.2-2.2c.3-.3.7-.4 1-.2 1.1.4 2.3.6 3.6.6.6 0 1 .4 1 1V20c0 .6-.4 1-1 1A17 17 0 0 1 3 4c0-.6.4-1 1-1h3.5c.6 0 1 .4 1 1 0 1.3.2 2.5.6 3.6.1.3 0 .7-.2 1l-2.3 2.2Z"/></svg>'
@@ -101,6 +137,7 @@ def header():
         <a href="/tratamientos/">Tratamientos</a>
         <a href="/#doctora">La doctora</a>
         <a href="/#clinica">La clínica</a>
+        <a href="/blog/">Blog</a>
         <a href="/#contacto">Contacto</a>
         <a class="btn btn-small" href="tel:{TEL}">{TEL_TXT}</a>
       </nav>
@@ -132,6 +169,7 @@ def footer():
             <li><a href="/#doctora">La doctora</a></li>
             <li><a href="/#clinica">La clínica</a></li>
             <li><a href="/#contacto">Horario y contacto</a></li>
+            <li><a href="/blog/">Blog</a></li>
             <li><a href="https://www.facebook.com/p/Cl%C3%ADnica-Dental-Dra-Eva-Mart%C3%ADn-Molina-100068460270961/" target="_blank" rel="noopener">Facebook</a></li>
           </ul>
         </div>
@@ -221,7 +259,7 @@ def pagina_tratamiento(t):
                 "inLanguage": "es-ES",
                 "isPartOf": {"@id": SITE + "/#web"},
                 "publisher": {"@id": SITE + "/#clinica"},
-                "lastReviewed": HOY,
+                "lastReviewed": ACTUALIZADO,
                 "reviewedBy": DOCTORA,
                 "about": {"@type": "MedicalProcedure", "name": t["nombre"], "description": t["intro"]},
             },
@@ -285,6 +323,7 @@ def pagina_tratamiento(t):
 {"".join(cuerpo)}        </article>
 {aside()}    </div>
 
+{bloque_articulos(t)}
     <section class="related" aria-labelledby="rel-title">
       <div class="wrap">
         <h2 id="rel-title">Otros tratamientos</h2>
@@ -405,6 +444,264 @@ def pagina_404():
     )
 
 
+# ---------------------------------------------------------------- Blog
+
+RSS_LINK = f'  <link rel="alternate" type="application/rss+xml" title="Blog de la Clínica Dental Dra. Eva Martín Molina" href="{SITE}/blog/feed.xml">\n'
+
+
+def tarjetas_entradas(lista, nivel="h3"):
+    items = []
+    for p in lista:
+        items.append(
+            f'          <li><a href="/blog/{p["slug"]}/">'
+            f'<time class="post-card-date" datetime="{p["fecha"].isoformat()}">{fecha_larga(p["fecha"])}</time>'
+            f'<{nivel} class="related-name">{e(p["titulo"])}</{nivel}>'
+            f'<span class="related-short">{e(p["resumen"])}</span></a></li>')
+    return "\n".join(items)
+
+
+def bloque_articulos(t):
+    """Últimos artículos del blog sobre un tratamiento, para su página."""
+    lista = [p for p in PUBLICADAS if p["tratamiento"] == t["slug"]][:3]
+    if not lista:
+        return ""
+    return f"""    <section class="section-blog" aria-labelledby="art-title">
+      <div class="wrap">
+        <h2 id="art-title">Artículos sobre {e(t["nombre"][0].lower() + t["nombre"][1:])}</h2>
+        <ul class="related-list post-cards">
+{tarjetas_entradas(lista)}
+        </ul>
+        <a class="text-link" href="/blog/">Ver todos los artículos</a>
+      </div>
+    </section>
+"""
+
+
+def relacionadas(p, n=3):
+    """Entradas del mismo tratamiento primero; si no hay bastantes, las más recientes."""
+    otras = [x for x in PUBLICADAS if x["slug"] != p["slug"]]
+    mismas = [x for x in otras if x["tratamiento"] == p["tratamiento"]]
+    resto = [x for x in otras if x["tratamiento"] != p["tratamiento"]]
+    return (mismas + resto)[:n]
+
+
+def pagina_entrada(p):
+    ruta = f"/blog/{p['slug']}/"
+    url = SITE + ruta
+    t = POR_SLUG[p["tratamiento"]]
+    titulo_seo = p.get("titulo_seo") or f"{p['titulo']} | Dra. Eva Martín Molina"
+    revisado = p.get("revisado", "").lower() in ("si", "sí", "true")
+
+    articulo = {
+        "@type": "BlogPosting",
+        "@id": url + "#articulo",
+        "mainEntityOfPage": url,
+        "url": url,
+        "headline": p["titulo"],
+        "description": p["descripcion"],
+        "datePublished": p["fecha"].isoformat(),
+        "dateModified": p.get("actualizado") or p["fecha"].isoformat(),
+        "inLanguage": "es-ES",
+        "image": SITE + "/assets/img/og-image.jpg",
+        "author": {"@type": "Organization", "name": "Clínica Dental Dra. Eva Martín Molina", "url": SITE + "/"},
+        "publisher": CLINICA_ID,
+        "isPartOf": {"@id": SITE + "/blog/#blog"},
+        "about": {"@type": "MedicalProcedure", "name": t["nombre"], "url": f"{SITE}/{t['slug']}/"},
+    }
+    if revisado:
+        articulo["reviewedBy"] = DOCTORA
+    graph = {
+        "@context": "https://schema.org",
+        "@graph": [
+            articulo,
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE + "/"},
+                    {"@type": "ListItem", "position": 2, "name": "Blog", "item": SITE + "/blog/"},
+                    {"@type": "ListItem", "position": 3, "name": p["titulo"], "item": url},
+                ],
+            },
+        ],
+    }
+    meta_revision = (
+        '<span>Revisado por la Dra. Eva María Martín Molina, odontóloga colegiada nº 28006108</span>'
+        if revisado else '<span>Clínica Dental Dra. Eva Martín Molina</span>')
+    mas = relacionadas(p)
+    bloque_mas = ""
+    if mas:
+        bloque_mas = f"""
+    <section class="related" aria-labelledby="mas-title">
+      <div class="wrap">
+        <h2 id="mas-title">Sigue leyendo</h2>
+        <ul class="related-list post-cards">
+{tarjetas_entradas(mas)}
+        </ul>
+        <a class="text-link" href="/blog/">Ver todos los artículos</a>
+      </div>
+    </section>
+"""
+    extra = jsonld(graph) + RSS_LINK + f'  <meta property="article:published_time" content="{p["fecha"].isoformat()}">\n'
+    return (
+        head(titulo_seo, p["descripcion"], ruta, extra, og_tipo="article")
+        + header()
+        + f"""
+  <main id="main">
+    <section class="page-hero">
+      <div class="wrap">
+{migas([("Inicio", "/"), ("Blog", "/blog/"), (p["titulo"], None)])}        <h1>{e(p["h1"])}</h1>
+        <p class="post-meta"><time datetime="{p["fecha"].isoformat()}">{fecha_larga(p["fecha"])}</time>{meta_revision}</p>
+      </div>
+    </section>
+
+    <div class="wrap page-grid">
+        <article class="prose">
+{p["cuerpo"]}
+          <div class="post-cta">
+            <p class="post-cta-title">¿Quieres que lo veamos en consulta?</p>
+            <p>En la clínica de la Dra. Eva Martín Molina, en Leganés, te explicamos tu caso con calma y sin compromiso.</p>
+            <p class="post-cta-links"><a href="/{t["slug"]}/">Más sobre {e(t["nombre"][0].lower() + t["nombre"][1:])}</a> · <a href="tel:{TEL}">Llamar al {TEL_TXT}</a></p>
+          </div>
+          <p class="prose-note">Este artículo es informativo y no sustituye una valoración en consulta. Si tienes dolor o una urgencia, llámanos.</p>
+        </article>
+{aside()}    </div>
+{bloque_mas}  </main>
+"""
+        + footer()
+    )
+
+
+def pagina_blog(n, total, lista):
+    ruta = "/blog/" if n == 1 else f"/blog/pagina/{n}/"
+    titulo = "Blog de salud dental | Clínica Dental Dra. Eva Martín Molina, Leganés"
+    if n > 1:
+        titulo = f"Blog de salud dental (página {n}) | Dra. Eva Martín Molina"
+    desc = ("Consejos de salud bucodental de la clínica de la Dra. Eva Martín Molina en Leganés: "
+            "implantes, ortodoncia, encías, blanqueamiento, bruxismo y cuidado diario.")
+    graph = {
+        "@context": "https://schema.org",
+        "@graph": [
+            {
+                "@type": "Blog",
+                "@id": SITE + "/blog/#blog",
+                "url": SITE + "/blog/",
+                "name": "Blog de la Clínica Dental Dra. Eva Martín Molina",
+                "description": desc,
+                "inLanguage": "es-ES",
+                "publisher": CLINICA_ID,
+                "isPartOf": {"@id": SITE + "/#web"},
+            },
+            {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {"@type": "ListItem", "position": 1, "name": "Inicio", "item": SITE + "/"},
+                    {"@type": "ListItem", "position": 2, "name": "Blog", "item": SITE + "/blog/"},
+                ],
+            },
+        ],
+    }
+    enlaces = []
+    if n > 1:
+        anterior = "/blog/" if n == 2 else f"/blog/pagina/{n - 1}/"
+        enlaces.append(f'<a class="btn btn-ghost" href="{anterior}" rel="prev">Artículos más recientes</a>')
+    if n < total:
+        enlaces.append(f'<a class="btn btn-ghost" href="/blog/pagina/{n + 1}/" rel="next">Artículos anteriores</a>')
+    paginacion = ""
+    if enlaces:
+        paginacion = (f'        <nav class="pager" aria-label="Páginas del blog">{"".join(enlaces)}'
+                      f'<span class="pager-info">Página {n} de {total}</span></nav>\n')
+    if lista:
+        contenido = f"""        <ul class="related-list post-cards">
+{tarjetas_entradas(lista, "h2")}
+        </ul>
+"""
+    else:
+        contenido = "        <p>Muy pronto publicaremos aquí nuestros primeros artículos.</p>\n"
+    return (
+        head(titulo, desc, ruta, jsonld(graph) + RSS_LINK)
+        + header()
+        + f"""
+  <main id="main">
+    <section class="page-hero">
+      <div class="wrap">
+{migas([("Inicio", "/"), ("Blog", None)])}        <h1>Blog de salud dental</h1>
+        <p class="lead">Respuestas claras a las dudas que más nos preguntáis en la consulta: qué es normal, qué no, y cuándo conviene venir a vernos.</p>
+      </div>
+    </section>
+
+    <section class="section blog-index">
+      <div class="wrap">
+{contenido}{paginacion}      </div>
+    </section>
+  </main>
+"""
+        + footer()
+    )
+
+
+def feed_rss(lista):
+    def rfc822(fecha):
+        dias = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+        meses = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"]
+        return f"{dias[fecha.weekday()]}, {fecha.day:02d} {meses[fecha.month - 1]} {fecha.year} 07:00:00 +0100"
+
+    items = []
+    for p in lista[:20]:
+        url = f"{SITE}/blog/{p['slug']}/"
+        items.append(f"""    <item>
+      <title>{e(p["titulo"])}</title>
+      <link>{url}</link>
+      <guid isPermaLink="true">{url}</guid>
+      <pubDate>{rfc822(p["fecha"])}</pubDate>
+      <description>{e(p["descripcion"])}</description>
+    </item>""")
+    ultima = rfc822(lista[0]["fecha"]) if lista else rfc822(blog.hoy_madrid())
+    return f"""<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog de la Clínica Dental Dra. Eva Martín Molina</title>
+    <link>{SITE}/blog/</link>
+    <atom:link href="{SITE}/blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Consejos de salud bucodental desde nuestra clínica en Leganés.</description>
+    <language>es-ES</language>
+    <lastBuildDate>{ultima}</lastBuildDate>
+{chr(10).join(items)}
+  </channel>
+</rss>
+"""
+
+
+INICIO_MARCA = "<!-- BLOG:INICIO (lo rellena tools/generar.py) -->"
+FIN_MARCA = "<!-- BLOG:FIN -->"
+
+
+def actualizar_portada():
+    """Pone las tres últimas entradas en la portada, entre las marcas BLOG:INICIO y BLOG:FIN."""
+    archivo = ROOT / "index.html"
+    texto = archivo.read_text(encoding="utf-8")
+    ini, fin = texto.find(INICIO_MARCA), texto.find(FIN_MARCA)
+    if ini == -1 or fin == -1:
+        print("   (index.html sin marcas BLOG: no se actualiza la portada)")
+        return
+    bloque = ""
+    if PUBLICADAS:
+        bloque = f"""
+    <section class="section section-blog home-blog" id="blog" aria-labelledby="b-title">
+      <div class="wrap">
+        <h2 id="b-title">Del blog</h2>
+        <ul class="related-list post-cards">
+{tarjetas_entradas(PUBLICADAS[:3])}
+        </ul>
+        <a class="text-link" href="/blog/">Ver todos los artículos</a>
+      </div>
+    </section>
+    """
+    nuevo = texto[:ini + len(INICIO_MARCA)] + bloque + texto[fin:]
+    if nuevo != texto:
+        archivo.write_text(nuevo, encoding="utf-8", newline="\n")
+        print("   index.html (últimas entradas)")
+
+
 def redireccion(destino, texto):
     return f"""<!doctype html>
 <html lang="es">
@@ -431,7 +728,34 @@ def escribir(ruta_rel, contenido):
 
 
 def main():
+    parser = argparse.ArgumentParser(description="Genera las páginas interiores de la web.")
+    parser.add_argument("--hasta", metavar="AAAA-MM-DD",
+                        help="Publica las entradas del blog hasta esa fecha (para previsualizar en local). "
+                             "No hagas commit del resultado: vuelve a generar sin esta opción.")
+    args = parser.parse_args()
+    hasta = datetime.date.fromisoformat(args.hasta) if args.hasta else None
+
+    publicadas, todas = blog.entradas(hasta, tratamientos=POR_SLUG)
+    PUBLICADAS[:] = publicadas
+    pendientes = len(todas) - len(publicadas)
+    print(f"Blog: {len(publicadas)} entradas publicadas, {pendientes} programadas.")
+    if pendientes:
+        proxima = min(t["fecha"] for t in todas if t not in publicadas)
+        ultima = max(t["fecha"] for t in todas)
+        print(f"      Próxima: {proxima}. Última programada: {ultima}.")
+
     print("Generando páginas:")
+    # La carpeta /blog/ se genera entera cada vez (así desaparece lo que se quite o se reprograme)
+    shutil.rmtree(ROOT / "blog", ignore_errors=True)
+    for p in PUBLICADAS:
+        escribir(f"blog/{p['slug']}/index.html", pagina_entrada(p))
+    paginas = max(1, -(-len(PUBLICADAS) // POR_PAGINA))
+    for n in range(1, paginas + 1):
+        trozo = PUBLICADAS[(n - 1) * POR_PAGINA:n * POR_PAGINA]
+        escribir("blog/index.html" if n == 1 else f"blog/pagina/{n}/index.html", pagina_blog(n, paginas, trozo))
+    escribir("blog/feed.xml", feed_rss(PUBLICADAS))
+    actualizar_portada()
+
     for t in TRATAMIENTOS:
         escribir(f"{t['slug']}/index.html", pagina_tratamiento(t))
     escribir("tratamientos/index.html", pagina_tratamientos())
@@ -449,15 +773,26 @@ def main():
 
     # URLs antiguas de la web de Wix que no tienen equivalente directo
     escribir("contacto/index.html", redireccion("/#contacto", "Ir a horario y contacto"))
-    escribir("blog-1/index.html", redireccion("/", "Ir al inicio"))
+    escribir("blog-1/index.html", redireccion("/blog/", "Ir al blog"))
 
-    urls = [("/", "1.0", "monthly"), ("/tratamientos/", "0.9", "monthly")]
-    urls += [(f"/{t['slug']}/", "0.8", "monthly") for t in TRATAMIENTOS]
-    urls += [(p, "0.2", "yearly") for p in ("/aviso-legal.html", "/privacidad.html", "/cookies.html")]
+    ultima_entrada = PUBLICADAS[0]["fecha"].isoformat() if PUBLICADAS else ACTUALIZADO
+    reciente = max(ACTUALIZADO, ultima_entrada)
+
+    def ultima_de(slug):
+        fechas = [p["fecha"].isoformat() for p in PUBLICADAS if p["tratamiento"] == slug]
+        return max([ACTUALIZADO] + fechas)
+
+    # (ruta, prioridad, frecuencia, última modificación)
+    urls = [("/", "1.0", "weekly", reciente), ("/tratamientos/", "0.9", "monthly", ACTUALIZADO)]
+    urls += [(f"/{t['slug']}/", "0.8", "monthly", ultima_de(t["slug"])) for t in TRATAMIENTOS]
+    urls += [("/blog/", "0.7", "daily", reciente)]
+    urls += [(f"/blog/{p['slug']}/", "0.6", "yearly", p.get("actualizado") or p["fecha"].isoformat())
+             for p in PUBLICADAS]
+    urls += [(p, "0.2", "yearly", ACTUALIZADO) for p in ("/aviso-legal.html", "/privacidad.html", "/cookies.html")]
     sitemap = ['<?xml version="1.0" encoding="UTF-8"?>',
                '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">']
-    for ruta, prioridad, freq in urls:
-        sitemap.append(f"  <url><loc>{SITE}{ruta}</loc><lastmod>{HOY}</lastmod>"
+    for ruta, prioridad, freq, lastmod in urls:
+        sitemap.append(f"  <url><loc>{SITE}{ruta}</loc><lastmod>{lastmod}</lastmod>"
                        f"<changefreq>{freq}</changefreq><priority>{prioridad}</priority></url>")
     sitemap.append("</urlset>\n")
     escribir("sitemap.xml", "\n".join(sitemap))

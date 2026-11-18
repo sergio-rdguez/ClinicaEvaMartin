@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Blog de la Clínica Dental Dra. Eva Martín Molina</title>
+    <link>https://www.dentalevamartinmolina.com/blog/</link>
+    <atom:link href="https://www.dentalevamartinmolina.com/blog/feed.xml" rel="self" type="application/rss+xml"/>
+    <description>Consejos de salud bucodental desde nuestra clínica en Leganés.</description>
+    <language>es-ES</language>
+    <lastBuildDate>Wed, 18 Nov 2026 07:00:00 +0100</lastBuildDate>
+    <item>
+      <title>¿Por qué me sangran las encías al cepillarme?</title>
+      <link>https://www.dentalevamartinmolina.com/blog/sangrado-encias/</link>
+      <guid isPermaLink="true">https://www.dentalevamartinmolina.com/blog/sangrado-encias/</guid>
+      <pubDate>Wed, 18 Nov 2026 07:00:00 +0100</pubDate>
+      <description>Las encías que sangran al cepillarse suelen avisar de gingivitis. Te explicamos las causas, qué hacer en casa y cuándo pedir cita en el dentista.</description>
+    </item>
+    <item>
+      <title>¿Implante o puente? Diferencias para reponer un diente</title>
+      <link>https://www.dentalevamartinmolina.com/blog/implante-o-puente/</link>
+      <guid isPermaLink="true">https://www.dentalevamartinmolina.com/blog/implante-o-puente/</guid>
+      <pubDate>Wed, 18 Nov 2026 07:00:00 +0100</pubDate>
+      <description>Implante dental o puente fijo: cómo funciona cada uno, ventajas, inconvenientes y qué tener en cuenta para elegir la mejor opción para reponer un diente.</description>
+    </item>
+    <item>
+      <title>Bruxismo: síntomas de que aprietas o rechinas los dientes</title>
+      <link>https://www.dentalevamartinmolina.com/blog/bruxismo-sintomas/</link>
+      <guid isPermaLink="true">https://www.dentalevamartinmolina.com/blog/bruxismo-sintomas/</guid>
+      <pubDate>Wed, 18 Nov 2026 07:00:00 +0100</pubDate>
+      <description>¿Te levantas con dolor de mandíbula o de cabeza? Estos son los síntomas del bruxismo, por qué aparece y cómo se protegen los dientes con una férula.</description>
+    </item>
+  </channel>
+</rss>
