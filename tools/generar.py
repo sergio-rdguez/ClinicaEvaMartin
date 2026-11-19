@@ -702,13 +702,29 @@ def actualizar_portada():
         print("   index.html (últimas entradas)")
 
 
+# (ruta antigua de Wix, destino, texto del enlace). Las rutas van sin codificar:
+# Google pide /caracter%C3%ADsticas-... y GitHub Pages sirve la carpeta con tilde.
+WIX_ANTIGUAS = [
+    ("blog-1", "/blog/", "Ir al blog"),
+    ("blog-1/tags/endodoncia", "/odontologia-general/", "Ver odontología general"),
+    ("blog-1/tags/ortodoncia-invisible", "/ortodoncia-invisible/", "Ver ortodoncia invisible"),
+    ("single-post/2017/06/22/características-de-los-implantes-dentales",
+     "/implantes/", "Ver implantes dentales"),
+    ("single-post/2019/01/21/cuidados-básicos-que-requieren-los-implantes-dentales",
+     "/implantes/", "Ver implantes dentales"),
+    ("single-post/2018/07/17/5-preguntas-frecuentes-sobre-el-blanqueamiento-dental",
+     "/blanqueamiento-dental/", "Ver blanqueamiento dental"),
+    ("single-post/2018/09/07/ventajas-de-la-ortodoncia-invisible",
+     "/ortodoncia-invisible/", "Ver ortodoncia invisible"),
+]
+
+
 def redireccion(destino, texto):
     return f"""<!doctype html>
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <title>Esta página se ha movido | Clínica Dental Dra. Eva Martín Molina</title>
-  <meta name="robots" content="noindex">
   <link rel="canonical" href="{SITE}{destino.split('#')[0]}">
   <meta http-equiv="refresh" content="0; url={destino}">
   <script>location.replace("{destino}");</script>
@@ -771,9 +787,14 @@ def main():
         "Esta web no usa cookies. Información sobre el mapa de Google que se carga bajo demanda.", COOKIES))
     escribir("404.html", pagina_404())
 
-    # URLs antiguas de la web de Wix que no tienen equivalente directo
+    # URLs antiguas de la web de Wix que Google sigue rastreando. GitHub Pages no
+    # permite redirecciones 301, así que cada una es una página con redirección
+    # inmediata (meta refresh) y canonical al destino, que Google trata como un 301.
+    # Sin "noindex": con él, Google la marca como "Excluida por noindex" en vez de
+    # seguir la redirección.
     escribir("contacto/index.html", redireccion("/#contacto", "Ir a horario y contacto"))
-    escribir("blog-1/index.html", redireccion("/blog/", "Ir al blog"))
+    for antigua, destino, texto in WIX_ANTIGUAS:
+        escribir(f"{antigua}/index.html", redireccion(destino, texto))
 
     ultima_entrada = PUBLICADAS[0]["fecha"].isoformat() if PUBLICADAS else ACTUALIZADO
     reciente = max(ACTUALIZADO, ultima_entrada)

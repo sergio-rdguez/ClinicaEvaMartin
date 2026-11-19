@@ -14,7 +14,7 @@ blog/                   Blog (generado entero en cada publicación: no editar)
 <tratamiento>/          Una página por tratamiento (generadas)
 tratamientos/           Índice de tratamientos (generado)
 aviso-legal.html, privacidad.html, cookies.html, 404.html   (generadas)
-contacto/, blog-1/      Redirecciones de URLs antiguas de Wix (generadas)
+contacto/, blog-1/, single-post/   Redirecciones de URLs antiguas de Wix (generadas, lista WIX_ANTIGUAS en tools/generar.py)
 sitemap.xml, site.webmanifest                               (generados)
 tools/contenido.py      Textos de los tratamientos
 tools/legal.py          Textos legales
